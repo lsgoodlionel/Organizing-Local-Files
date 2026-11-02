@@ -1,0 +1,3 @@
+[CmdletBinding()]
+param([Parameter(Mandatory)][string]$PlanCsv,[Parameter(Mandatory)][string]$StateDir)
+$total=@(Import-Csv -LiteralPath $PlanCsv).Count;$resultLog=Join-Path $StateDir 'results.jsonl';$done=if(Test-Path $resultLog){@([IO.File]::ReadLines($resultLog)).Count}else{0};$groups=[ordered]@{};if(Test-Path $resultLog){foreach($line in [IO.File]::ReadLines($resultLog)){if($line){$r=$line|ConvertFrom-Json;if(-not$groups.Contains([string]$r.status)){$groups[[string]$r.status]=0};$groups[[string]$r.status]++}}};[ordered]@{done=$done;total=$total;percent=if($total){[math]::Round(100*$done/$total,2)}else{0};statuses=$groups;updatedAt=(Get-Date).ToString('o')}|ConvertTo-Json -Depth 4
